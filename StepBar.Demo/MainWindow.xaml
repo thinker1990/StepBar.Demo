@@ -7,7 +7,7 @@
   xmlns:local="clr-namespace:StepBar.Demo"
   xmlns:hc="https://handyorg.github.io/handycontrol"
   mc:Ignorable="d"
-  Title="MainWindow"
+  Title="StepBar 示例"
   Height="680"
   Width="800"
   d:DataContext="{d:DesignInstance local:MainWindowViewModel}"

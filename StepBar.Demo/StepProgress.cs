@@ -45,8 +45,9 @@ public sealed class StepProgress : ReactiveObject, IDisposable
         _elapsedTimeSubscription = Observable
             .Interval(TimeSpan.FromMilliseconds(100))
             .Select(_ => _stopwatch.ElapsedMilliseconds)
+            .DistinctUntilChanged()
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(x => ElapsedTime = x);
+            .Subscribe(time => ElapsedTime = time);
     }
 
     /// <summary>
@@ -76,7 +77,6 @@ public sealed class StepProgress : ReactiveObject, IDisposable
     /// </summary>
     public void Dispose()
     {
-        _stopwatch.Stop();
         _elapsedTimeSubscription.Dispose();
     }
 }

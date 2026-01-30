@@ -9,7 +9,7 @@ namespace StepBar.Demo;
 /// <summary>
 /// The view model for the main window, responsible for managing the list of steps and their execution.
 /// </summary>
-public sealed class MainWindowViewModel : ReactiveObject
+public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 {
     private readonly Stopwatch _stopwatch = new();
     private readonly IDisposable _elapsedTimeSubscription;
@@ -23,6 +23,15 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// Gets the command to execute all steps sequentially.
     /// </summary>
     public ReactiveCommand<Unit, Unit> RunCommand { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the steps are currently running.
+    /// </summary>
+    public bool IsRunning
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
 
     /// <summary>
     /// Gets or sets the current index of the step being processed.
@@ -60,28 +69,43 @@ public sealed class MainWindowViewModel : ReactiveObject
         _elapsedTimeSubscription = Observable
             .Interval(TimeSpan.FromMilliseconds(100))
             .Select(_ => _stopwatch.ElapsedMilliseconds)
+            .DistinctUntilChanged()
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(x => TotalElapsedTime = x);
+            .Subscribe(time => TotalElapsedTime = time);
     }
 
     private async Task RunStepsAsync()
     {
-        CurrentStepIndex = 0;
-        TotalElapsedTime = 0;
-
         foreach (var stepProgress in StepProgresses)
         {
             stepProgress.Reset();
         }
 
+        TotalElapsedTime = 0;
+        IsRunning = true;
         _stopwatch.Restart();
 
-        foreach (var stepProgress in StepProgresses)
+        for (CurrentStepIndex = 0; CurrentStepIndex < StepProgresses.Count; CurrentStepIndex++)
         {
+            var stepProgress = StepProgresses[CurrentStepIndex];
             await stepProgress.RunAsync();
-            CurrentStepIndex++;
         }
 
         _stopwatch.Stop();
+        IsRunning = false;
+    }
+
+    /// <summary>
+    /// Disposes of the resources used by the view model.
+    /// </summary>
+    public void Dispose()
+    {
+        _elapsedTimeSubscription.Dispose();
+
+        foreach (var stepProgress in StepProgresses)
+        {
+            stepProgress.Dispose();
+        }
+        StepProgresses.Clear();
     }
 }

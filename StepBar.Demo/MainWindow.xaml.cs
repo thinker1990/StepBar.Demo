@@ -33,4 +33,18 @@ public partial class MainWindow
         var randomDelay = Random.Shared.Next(1000, 3000);
         await Task.Delay(TimeSpan.FromMilliseconds(randomDelay));
     }
+
+    /// <summary>
+    /// Disposes of the resources used by the view model when the window is closed.
+    /// </summary>
+    /// <param name="e">The event arguments.</param>
+    protected override void OnClosed(EventArgs e)
+    {
+        if (DataContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+
+        base.OnClosed(e);
+    }
 }

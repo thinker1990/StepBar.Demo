@@ -26,7 +26,7 @@
 
 ### 前置要求
 
-- Visual Studio 2022 (或支持 .NET 10 的 IDE)
+- Visual Studio 2026 (或支持 .NET 10 的 IDE)
 - .NET 10.0 SDK
 
 ### 获取代码
